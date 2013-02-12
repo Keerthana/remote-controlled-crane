@@ -191,7 +191,7 @@ public class Manipulate extends JComponent {
 		angles[0] += -Math.PI / 4.0;
 		angles[1] += -Math.PI / 6.0;
 
-		 create two mouse listeners to deal with mouse events 
+		// create two mouse listeners to deal with mouse events 
 		MouseMotionListener hungryRat = new MouseMotionListener() {
 
 			public void mouseDragged(MouseEvent e) {
@@ -207,7 +207,7 @@ public class Manipulate extends JComponent {
 					k.printStackTrace();
 				}
 
-				 if the mouse is in the lower part of the crane 
+				// if the mouse is in the lower part of the crane 
 				if (body.contains(mousePoint.getX(), mousePoint.getY()) ||
 				    tracks.contains(mousePoint.getX(), mousePoint.getY()) ||
 				    fulcrum.contains(mousePoint.getX(), mousePoint.getY())) {

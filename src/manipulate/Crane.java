@@ -1,69 +1,53 @@
 package manipulate;
 
 import java.awt.BasicStroke;
-import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
 import java.awt.Rectangle;
-import java.awt.Stroke;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Point2D;
-import java.util.Random;
 import java.util.Vector;
-
-import javax.swing.JComponent;
-import javax.swing.JFrame;
 
 public class Crane implements IDisplayable {
 	public boolean craneMove = true;
 	public Vector<IDisplayable> dispList = new Vector<IDisplayable>();
-
+	public int frameWidth = 800, frameHeight = 600;
+	private int terrainLevel, truckLevel;
+	private static int truckStart = 100;
+	private int truckWidth, truckHeight, truckMaxHeight;
+	
+	private static int fulcrumHeight = 20;
+	
+	//Initialize truck dimensions
+	private int[] xbody = new int[6];
+	private int[] ybody = new int[6];
+ 
+	private int[] xfulcrum = new int[3];
+	private int[] yfulcrum = new int[3];
+	private Polygon fulcrum;
+	private Polygon body;
+	private Rectangle tracks;
+	
 	public class CraneBase implements IDisplayable {
 
-		Random generator = new Random();
-
-		private int[] xbody = { 90, 210, 210, 190, 110, 90 };
-
-		private int[] ybody = { 380, 380, 320, 300, 300, 320 };
-		private int[] xfulcrum = { 135, 150, 165 };
-		private int[] yfulcrum = { 300, 280, 300 };
-		private Polygon fulcrum;
-		private Polygon body;
-		private Rectangle tracks;
-
-		private Stroke simpleStroke = new BasicStroke(1);
-		private Stroke thickStroke = new BasicStroke(4);
-		private Stroke dottedStrokeStationary = new BasicStroke(4.0f,
-				BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 2.0f,
-				new float[] { 8.0f, 6.0f }, 0.0f);
-		private Stroke dottedStrokeMove = new BasicStroke(4.0f,
-				BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 2.0f,
-				new float[] { 8.0f, 6.0f }, Math.abs((float) ((generator
-						.nextGaussian() + 1) * 10.0f)));
-
 		public CraneBase() {
-			super();
-
-			body = new Polygon(xbody, ybody, xbody.length);
-			fulcrum = new Polygon(xfulcrum, yfulcrum, xfulcrum.length);
-			tracks = new Rectangle(70, 380, 160, 25);
-
+			super();	
 		}
 
 		@Override
 		public void drawMe(Graphics g) {
-			// TODO Auto-generated method stub
+
 			Graphics2D g2 = (Graphics2D) g;
+			body = new Polygon(xbody, ybody, xbody.length);
+			fulcrum = new Polygon(xfulcrum, yfulcrum, xfulcrum.length);
+			tracks = new Rectangle(truckStart - 20, truckLevel, truckWidth + 40, terrainLevel - truckLevel);
+
 			// Draw the body of the crane
 			g2.setColor(blueish);
+			g2.setStroke(simpleStroke);
 			g2.fillPolygon(body);
 			g2.fillPolygon(fulcrum);
-
 			g2.setColor(grayish);
 			g2.fillRoundRect(tracks.x, tracks.y, tracks.width, tracks.height,
 					10, 10);
@@ -79,11 +63,6 @@ public class Crane implements IDisplayable {
 			g2.drawRoundRect(tracks.x - 1, tracks.y - 1, tracks.width + 2,
 					tracks.height + 2, 10, 10);
 
-			// Draw the base line
-			g2.setStroke(thickStroke);
-			g2.setColor(greenish);
-			g2.drawLine(0, 410, 2000, 410);
-
 		}
 	}
 	
@@ -96,7 +75,6 @@ public class Crane implements IDisplayable {
 
 		private Point2D mousePoint;
 
-		private Point2D[] mouseTransform;
 		private Point2D[] anchorAxis;
 
 		public CraneArm() {
@@ -124,11 +102,7 @@ public class Crane implements IDisplayable {
 			anchorPoints[3] = new Point2D.Double(arms[3].x + arms[3].height / 2,
 					arms[3].y + arms[3].height / 2);
 
-			mouseTransform = new Point2D[4];
-			mouseTransform[0] = new Point2D.Double();
-			mouseTransform[1] = new Point2D.Double();
-			mouseTransform[2] = new Point2D.Double();
-			mouseTransform[3] = new Point2D.Double();
+
 
 			anchorAxis = new Point2D[4];
 			anchorAxis[0] = new Point2D.Double(arms[0].x + 50, arms[0].y
@@ -165,14 +139,16 @@ public class Crane implements IDisplayable {
 
 		@Override
 		public void drawMe(Graphics g) {
-			// TODO Auto-generated method stub
+
 			Graphics2D g2 = (Graphics2D) g;
-			 // set transform to relevant arm transform and paint 
+			g2.setStroke(simpleStroke);
+			
+			// set transform to relevant arm transform and paint 
 			AffineTransform savedAT = g2.getTransform();
 
 			for (int i = 0; i < 4; i++) {
 					//System.out.println("transforms[" + i + "] = " + transforms[i] + "\n");
-					System.out.println("transforms[0] = " + transforms[0]);
+					//System.out.println("transforms[0] = " + transforms[0]);
 
 					g2.setTransform(transforms[i]);
 					
@@ -193,19 +169,61 @@ public class Crane implements IDisplayable {
 		}
 	}
 
+	public class Terrain implements IDisplayable {
+
+		@Override
+		public void drawMe(Graphics g) {
+			Graphics2D g2 = (Graphics2D) g;
+			// Draw the road/ terrain
+			g2.setColor(brownish);
+			g2.setStroke(new BasicStroke(frameHeight / 9));			
+			g2.drawLine(0, (int)(1.07f * terrainLevel), 2000, (int)(1.07f * terrainLevel));
+			
+			g2.setColor(greenish);
+			g2.setStroke(thickStroke);		
+			System.out.println("terrainlevel 6 " + terrainLevel);
+			g2.drawLine(0, (int)(1.00f * terrainLevel), 2000, (int)(1.00f * terrainLevel));
+			
+		}
+		
+	}
 	public Crane() {
-		dispList.add(0, new CraneBase());
-		dispList.add(0, new CraneArm());
+		dispList.add(0, new Terrain());
+		dispList.add(1, new CraneBase());
+		dispList.add(2, new CraneArm());
+
 	}
 
 	@Override
 	public void drawMe(Graphics g) {
-		// TODO Auto-generated method stub
 		for (IDisplayable i : dispList) {
-			System.out.println("Draw");
-			//Graphics g = null;
+			//System.out.println("Draw");
 			i.drawMe(g);
 			g.translate(0, 0);
 		}
+	}
+
+	public void updateFrameDims(int width, int height) {
+		frameWidth = width;
+		frameHeight = height;
+		terrainLevel=  (int)(0.9f * frameHeight);
+		truckLevel = (int)(0.875f * frameHeight);
+		System.out.println("terrainlevel 1 " + terrainLevel);
+
+
+		truckHeight = frameWidth / 20;
+		truckWidth = truckHeight * 2;
+		truckMaxHeight = (int) (truckHeight * 1.33f);
+		xbody = new int[] { truckStart, truckStart + truckWidth,
+				truckStart + truckWidth, truckStart + truckWidth - 20,
+				truckStart + 20, truckStart};
+		ybody = new int[] { truckLevel, truckLevel, truckLevel - truckHeight,
+				truckLevel - truckMaxHeight, truckLevel - truckMaxHeight,
+				truckLevel - truckHeight};
+		
+		xfulcrum = new int[] { truckStart + truckWidth/3, truckStart + 2*truckWidth/3, truckStart + truckWidth/2};
+		yfulcrum = new int[] { truckLevel - truckMaxHeight,
+				truckLevel - truckMaxHeight,
+				truckLevel - truckMaxHeight - fulcrumHeight };
 	}
 }
