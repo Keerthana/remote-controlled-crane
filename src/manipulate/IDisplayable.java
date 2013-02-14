@@ -29,4 +29,6 @@ public interface IDisplayable {
 	
 	// Member functions
 	public void drawMe(Graphics g);
+
+	public void updateLocation(double shift);
 }

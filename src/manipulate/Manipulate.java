@@ -272,7 +272,7 @@ public class Manipulate extends JComponent {
 			public void mouseExited(MouseEvent e) {
 			}
 
-			public void mouseReleased(MouseEvent e) {
+			public void mouseReleased(MouseEvent e) {addM
 			}
 
 			public void mouseClicked(MouseEvent e) {
